@@ -1,21 +1,24 @@
-FROM fedora:30
+FROM fedora:31
 
 LABEL maintainer="AptoGéo/Mathieu MAST"
 
 # Env variables
-ENV PG_VERSION_MAJOR 11
-ENV PG_VERSION_MINOR 5
-ENV PGIS_VERSION 25_${PG_VERSION_MAJOR}
+ENV PG_VERSION_MAJOR 12
+ENV PG_VERSION_MINOR 0
+ENV PGIS_VERSION 30_${PG_VERSION_MAJOR}
 ENV POSTGRESQL_DATA_DIR /var/lib/pgsql/${PG_VERSION_MAJOR}/data
+ENV DB_NAME postgis
+ENV DB_USER postgis
+ENV DB_PASSWD postgis
 
 # Add the PostgreSQL PGP key to verify the official yum repository packages
 RUN rpm --import https://yum.postgresql.org/RPM-GPG-KEY-PGDG-${PG_VERSION_MAJOR}
 
 # Add PostgreSQL's repository
-RUN dnf -y install https://download.postgresql.org/pub/repos/yum/${PG_VERSION_MAJOR}/fedora/fedora-30-x86_64/pgdg-fedora-repo-latest.noarch.rpm
+RUN dnf -y install https://download.postgresql.org/pub/repos/yum/${PG_VERSION_MAJOR}/fedora/fedora-31-x86_64/pgdg-fedora-repo-latest.noarch.rpm
 
 # Packages
-RUN dnf -y update && dnf install -y postgresql${PG_VERSION_MAJOR}-server postgresql${PG_VERSION_MAJOR}-contrib procps-ng net-tools postgis${PGIS_VERSION} postgis${PGIS_VERSION}-client && dnf -y clean all
+RUN dnf install -y postgresql${PG_VERSION_MAJOR}-server postgresql${PG_VERSION_MAJOR}-contrib procps-ng net-tools postgis${PGIS_VERSION} postgis${PGIS_VERSION}-client && dnf -y clean all
 
 # Use postgres user
 USER postgres
@@ -30,9 +33,9 @@ RUN echo "listen_addresses='*'" >> ${POSTGRESQL_DATA_DIR}/postgresql.conf
 # Create 'postgis' user with 'postgis' password
 RUN /usr/pgsql-${PG_VERSION_MAJOR}/bin/pg_ctl -D ${POSTGRESQL_DATA_DIR} start && \
     sleep 5 && \
-    psql --command "CREATE USER postgis WITH SUPERUSER PASSWORD 'postgis';" && \
-    createdb -O postgis postgis && \
-    psql --dbname postgis --command "CREATE EXTENSION postgis;" && \
+    psql --command "CREATE USER ${DB_USER} WITH SUPERUSER PASSWORD '${DB_PASSWD}';" && \
+    createdb -O ${DB_USER} ${DB_NAME} && \
+    psql --dbname ${DB_NAME} --command "CREATE EXTENSION postgis;" && \
     /usr/pgsql-${PG_VERSION_MAJOR}/bin/pg_ctl -D ${POSTGRESQL_DATA_DIR} stop
 
 USER root
