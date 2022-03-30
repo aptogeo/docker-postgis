@@ -1,11 +1,12 @@
-FROM fedora:33
+FROM fedora:35
 
 LABEL maintainer="AptoGéo/Mathieu MAST"
 
 # Env variables
-ENV PG_VERSION_MAJOR 13
-ENV PG_VERSION_MINOR 1
-ENV PGIS_VERSION 31_${PG_VERSION_MAJOR}
+ENV PG_VERSION_MAJOR 14
+ENV PG_VERSION_MINOR 2
+ENV PGIS_VERSION 32_${PG_VERSION_MAJOR}
+ENV PGR_VERSION ${PG_VERSION_MAJOR}
 ENV POSTGRESQL_DATA_DIR /var/lib/pgsql/${PG_VERSION_MAJOR}/data
 ENV DB_NAME postgis
 ENV DB_USER postgis
@@ -15,10 +16,10 @@ ENV DB_PASSWD postgis
 RUN rpm --import https://yum.postgresql.org/RPM-GPG-KEY-PGDG-${PG_VERSION_MAJOR}
 
 # Add PostgreSQL's repository
-RUN dnf -y install https://download.postgresql.org/pub/repos/yum/reporpms/F-33-x86_64/pgdg-fedora-repo-latest.noarch.rpm
+RUN dnf -y install https://download.postgresql.org/pub/repos/yum/reporpms/F-35-x86_64/pgdg-fedora-repo-latest.noarch.rpm
 
 # Packages
-RUN dnf install -y postgresql${PG_VERSION_MAJOR}-server postgresql${PG_VERSION_MAJOR}-contrib procps-ng net-tools postgis${PGIS_VERSION} postgis${PGIS_VERSION}-client && dnf -y clean all
+RUN dnf install -y postgresql${PG_VERSION_MAJOR}-server postgresql${PG_VERSION_MAJOR}-contrib procps-ng net-tools postgis${PGIS_VERSION} postgis${PGIS_VERSION}-client pgrouting_${PGR_VERSION} && dnf -y clean all
 
 # Use postgres user
 USER postgres
@@ -35,10 +36,10 @@ RUN /usr/pgsql-${PG_VERSION_MAJOR}/bin/pg_ctl -D ${POSTGRESQL_DATA_DIR} start &&
     sleep 5 && \
     psql --command "CREATE USER ${DB_USER} WITH SUPERUSER PASSWORD '${DB_PASSWD}';" && \
     createdb -O ${DB_USER} ${DB_NAME} && \
-    psql --dbname ${DB_NAME} --command "CREATE EXTENSION postgis;" && \
+    psql --dbname ${DB_NAME} --command "CREATE EXTENSION postgis; CREATE EXTENSION pgrouting;" && \
     /usr/pgsql-${PG_VERSION_MAJOR}/bin/pg_ctl -D ${POSTGRESQL_DATA_DIR} stop
 
 USER root
 EXPOSE 5432
 VOLUME ${POSTGRESQL_DATA_DIR}
-CMD su - postgres -c "/usr/pgsql-${PG_VERSION_MAJOR}/bin/pg_ctl -D ${POSTGRESQL_DATA_DIR} start" && tail -f /dev/null
+CMD rm -f /var/run/postgresql/.s.PGSQL.5432.lock ; su - postgres -c "/usr/pgsql-${PG_VERSION_MAJOR}/bin/pg_ctl -D ${POSTGRESQL_DATA_DIR} start" ; tail -f /dev/null
