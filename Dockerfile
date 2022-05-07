@@ -42,4 +42,4 @@ RUN /usr/pgsql-${PG_VERSION_MAJOR}/bin/pg_ctl -D ${POSTGRESQL_DATA_DIR} start &&
 USER root
 EXPOSE 5432
 VOLUME ${POSTGRESQL_DATA_DIR}
-CMD rm -f /var/run/postgresql/.s.PGSQL.5432.lock ; su - postgres -c "/usr/pgsql-${PG_VERSION_MAJOR}/bin/pg_ctl -D ${POSTGRESQL_DATA_DIR} start" ; tail -f /dev/null
+CMD rm -rf /tmp/.s.PGSQL.5432 /tmp/.s.PGSQL.5432.lock /var/run/postgresql/.s.PGSQL.5432 /var/run/postgresql/.s.PGSQL.5432.lock ; su - postgres -c "/usr/pgsql-${PG_VERSION_MAJOR}/bin/pg_ctl -D ${POSTGRESQL_DATA_DIR} start" ; tail -f /dev/null
