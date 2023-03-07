@@ -1,11 +1,11 @@
-FROM fedora:35
+FROM fedora:37
 
 LABEL maintainer="AptoGéo/Mathieu MAST"
 
 # Env variables
-ENV PG_VERSION_MAJOR 14
+ENV PG_VERSION_MAJOR 15
 ENV PG_VERSION_MINOR 2
-ENV PGIS_VERSION 32_${PG_VERSION_MAJOR}
+ENV PGIS_VERSION 33_${PG_VERSION_MAJOR}
 ENV PGR_VERSION ${PG_VERSION_MAJOR}
 ENV POSTGRESQL_DATA_DIR /var/lib/pgsql/${PG_VERSION_MAJOR}/data
 ENV DB_NAME postgis
@@ -16,7 +16,7 @@ ENV DB_PASSWD postgis
 RUN rpm --import https://yum.postgresql.org/RPM-GPG-KEY-PGDG-${PG_VERSION_MAJOR}
 
 # Add PostgreSQL's repository
-RUN dnf -y install https://download.postgresql.org/pub/repos/yum/reporpms/F-35-x86_64/pgdg-fedora-repo-latest.noarch.rpm
+RUN dnf -y install https://download.postgresql.org/pub/repos/yum/reporpms/F-37-x86_64/pgdg-fedora-repo-latest.noarch.rpm
 
 # Packages
 RUN dnf install -y postgresql${PG_VERSION_MAJOR}-server postgresql${PG_VERSION_MAJOR}-contrib procps-ng net-tools postgis${PGIS_VERSION} postgis${PGIS_VERSION}-client pgrouting_${PGR_VERSION} && dnf -y clean all

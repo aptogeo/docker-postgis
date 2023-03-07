@@ -11,5 +11,5 @@
 
 ## Run Postgis Docker Container
 ```sh
-~ docker run --name "postgis" -p 8080:8080 -p 5432:5432 -d -t postgis
+~ docker run --name "postgis" -p 5432:5432 -d -t postgis
 ```
